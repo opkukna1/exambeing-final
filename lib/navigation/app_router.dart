@@ -23,14 +23,14 @@ import 'package:exambeing/features/bookmarks/screens/bookmarked_note_detail_scre
 import 'package:exambeing/features/profile/screens/profile_screen.dart';
 import 'package:exambeing/models/question_model.dart';
 import 'package:exambeing/models/public_note_model.dart';
-import 'package:exambeing/helpers/database_helper.dart'; // ✅ This import makes MyNote available
+import 'package:exambeing/helpers/database_helper.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   refreshListenable: GoRouterRefreshStream(FirebaseAuth.instance.authStateChanges()),
-  initialLocation: '/login-hub',
+  initialLocation: '/', // 1. CHANGED THIS from '/login-hub' to '/'
 
   routes: [
     GoRoute(
@@ -143,6 +143,9 @@ final GoRouter router = GoRouter(
       },
     ),
   ],
+  
+  // 2. COMMENTED OUT the entire redirect block
+  /*
   redirect: (BuildContext context, GoRouterState state) {
     final bool loggedIn = FirebaseAuth.instance.currentUser != null;
     final bool loggingIn = state.matchedLocation == '/login-hub' || state.matchedLocation == '/otp';
@@ -157,6 +160,7 @@ final GoRouter router = GoRouter(
 
     return null;
   },
+  */
 );
 
 class GoRouterRefreshStream extends ChangeNotifier {
