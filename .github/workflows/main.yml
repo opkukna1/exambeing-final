@@ -1,4 +1,4 @@
-name: Build Flutter APK
+name: Build Flutter App Bundle
 
 on:
   push:
@@ -24,15 +24,16 @@ jobs:
         with:
           channel: 'stable' # Use stable channel
           flutter-version: '3.22.2' # Specify a recent stable Flutter version
+          cache: true # Enable caching for faster builds
 
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      - name: Build Flutter APK
-        run: flutter build apk --release
+      - name: Build Flutter App Bundle # <-- CHANGE HERE
+        run: flutter build appbundle --release # <-- CHANGE HERE
 
-      - name: Upload APK artifact
+      - name: Upload App Bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: release-app-bundle # <-- CHANGE HERE
+          path: build/app/outputs/bundle/release/app-release.aab # <-- CHANGE HERE
