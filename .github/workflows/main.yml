@@ -29,17 +29,18 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Decode Keystore
+      # *** THIS STEP IS NOW UPDATED ***
+      - name: Create Keystore and key.properties
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.p12
+          echo "storeFile=upload-keystore.p12" > android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
 
+      # *** THIS STEP IS NOW SIMPLIFIED ***
       - name: Build Signed App Bundle
-        run: |
-          flutter build appbundle --release \
-            --keystore-password "${{ secrets.STORE_PASSWORD }}" \
-            --key-password "${{ secrets.KEY_PASSWORD }}" \
-            --key-alias "${{ secrets.KEY_ALIAS }}" \
-            --keystore "android/app/upload-keystore.p12"
+        run: flutter build appbundle --release
 
       - name: Upload App Bundle artifact
         uses: actions/upload-artifact@v4
