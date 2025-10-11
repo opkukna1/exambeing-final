@@ -4,7 +4,6 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-// This new section reads the version from local.properties
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -12,6 +11,14 @@ if (localPropertiesFile.exists()) {
         localProperties.load(reader)
     }
 }
+
+// *** START: NEW SECTION FOR SIGNING ***
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+// *** END: NEW SECTION FOR SIGNING ***
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
@@ -33,32 +40,32 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
-
-    defaultConfig {
-        applicationId = "com.example.exambeing"
-        minSdk = 23
-        targetSdk = 34
-        // These lines now use the new method
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+    // *** ADD THIS SIGNING CONFIGS BLOCK ***
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.debug
+            // This line tells Gradle to use the signing config above
+            signingConfig signingConfigs.release
         }
+    }
+    
+    defaultConfig {
+        applicationId = "com.example.exambeing"
+        minSdk = 23
+        targetSdk = 34
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
     }
 }
 
 flutter {
     source = "../.."
 }
-
-dependencies {}
