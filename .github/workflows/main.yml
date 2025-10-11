@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,10 +27,18 @@ jobs:
           flutter-version: '3.24.0'
           cache: true
 
+      # 🧹 Clean Gradle & Flutter cache to avoid Kotlin mismatch
+      - name: Clean Gradle and Flutter cache
+        run: |
+          echo "Cleaning Gradle and Flutter cache..."
+          rm -rf ~/.gradle/caches
+          rm -rf ~/.gradle/daemon
+          flutter clean
+
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # *** THIS STEP IS NOW UPDATED ***
+      # 🔐 Generate keystore and key.properties
       - name: Create Keystore and key.properties
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.p12
@@ -38,10 +47,11 @@ jobs:
           echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
 
-      # *** THIS STEP IS NOW SIMPLIFIED ***
+      # 🏗️ Build Signed App Bundle
       - name: Build Signed App Bundle
         run: flutter build appbundle --release
 
+      # 📦 Upload AAB file
       - name: Upload App Bundle artifact
         uses: actions/upload-artifact@v4
         with:
