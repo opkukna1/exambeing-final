@@ -3,12 +3,12 @@ name: Build Flutter App Bundle
 on:
   push:
     branches:
-      - main  # Or your default branch, e.g., master
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,18 +22,27 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable' # Use stable channel
-          flutter-version: '3.22.2' # Specify a recent stable Flutter version
-          cache: true # Enable caching for faster builds
+          channel: 'stable'
+          flutter-version: '3.24.0'
+          cache: true
 
-      - name: Install Flutter dependencies
+      - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Build Flutter App Bundle # <-- CHANGE HERE
-        run: flutter build appbundle --release # <-- CHANGE HERE
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.p12
+
+      - name: Build Signed App Bundle
+        run: |
+          flutter build appbundle --release \
+            --keystore-password "${{ secrets.STORE_PASSWORD }}" \
+            --key-password "${{ secrets.KEY_PASSWORD }}" \
+            --key-alias "${{ secrets.KEY_ALIAS }}" \
+            --keystore "android/app/upload-keystore.p12"
 
       - name: Upload App Bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-app-bundle # <-- CHANGE HERE
-          path: build/app/outputs/bundle/release/app-release.aab # <-- CHANGE HERE
+          name: release-app-bundle
+          path: build/app/outputs/bundle/release/app-release.aab
