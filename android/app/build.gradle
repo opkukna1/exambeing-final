@@ -4,7 +4,6 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-// This new section reads the version from local.properties
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -22,6 +21,16 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
+
+// >>>>>>>> [ NAYA CODE START ] <<<<<<<<
+// Yeh naya section key.properties file ko padhega
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+// >>>>>>>> [ NAYA CODE END ] <<<<<<<<
+
 
 android {
     namespace = "com.example.exambeing"
@@ -45,16 +54,28 @@ android {
         applicationId = "com.example.exambeing"
         minSdk = 23
         targetSdk = 34
-        // These lines now use the new method
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
-    buildTypes {
+    // >>>>>>>> [ BADLA HUA CODE START ] <<<<<<<<
+    // Yeh section batayega ki release key kahan se leni hai
+    signingConfigs {
         release {
-            signingConfig = signingConfigs.debug
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
         }
     }
+
+    // Ab release build sahi key se sign hoga
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+    // >>>>>>>> [ BADLA HUA CODE END ] <<<<<<<<
 }
 
 flutter {
