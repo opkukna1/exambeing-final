@@ -1,9 +1,9 @@
-name: Build Flutter APK
+name: Build Signed Flutter AAB
 
 on:
   push:
     branches:
-      - main  # Or your default branch, e.g., master
+      - main  # Ya aapki default branch, jaise master
 
 jobs:
   build:
@@ -22,17 +22,31 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable' # Use stable channel
-          flutter-version: '3.22.2' # Specify a recent stable Flutter version
+          channel: 'stable'
+          flutter-version: '3.22.2'
 
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      - name: Build Flutter APK
-        run: flutter build apk --release
+      # Naya Step: Base64 secret se keystore file banana
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
-      - name: Upload APK artifact
+      # Naya Step: key.properties file banana
+      - name: Create key.properties file
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+
+      # Badla hua Step: Signed App Bundle (AAB) banana
+      - name: Build Flutter App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      # Badla hua Step: AAB artifact upload karna
+      - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
