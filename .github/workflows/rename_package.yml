@@ -1,7 +1,6 @@
 name: 'Change Package Name'
 
 on:
-  # Yeh workflow ko manually chalane ki anumati deta hai
   workflow_dispatch:
     inputs:
       new_package_name:
@@ -12,6 +11,8 @@ on:
 jobs:
   rename-package:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permission add kar di gayi hai
 
     steps:
       # Step 1: Aapka code download karega
