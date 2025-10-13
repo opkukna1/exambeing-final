@@ -1,0 +1,42 @@
+name: 'Change Package Name'
+
+on:
+  # Yeh workflow ko manually chalane ki anumati deta hai
+  workflow_dispatch:
+    inputs:
+      new_package_name:
+        description: 'Naya package name (e.g., com.yourname.appname)'
+        required: true
+        type: string
+
+jobs:
+  rename-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Aapka code download karega
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Flutter ko server par install karega
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # Step 3: Package name badalne wala tool install karega
+      - name: Add package name changer tool
+        run: flutter pub add dev:change_app_package_name
+
+      # Step 4: Aapke diye gaye naye naam se package name badlega
+      - name: Run package name changer
+        run: flutter pub run change_app_package_name:main "${{ github.event.inputs.new_package_name }}"
+
+      # Step 5: Badle hue code ko repository mein save (commit & push) karega
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions-bot@github.com"
+          git add .
+          git commit -m "Automated: Updated package name to ${{ github.event.inputs.new_package_name }}" || echo "No changes to commit"
+          git push
