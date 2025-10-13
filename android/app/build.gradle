@@ -35,6 +35,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.opkukna.exambeing"
     compileSdk = 35
+    buildToolsVersion "34.0.0" // <-- YEH BADLAAV KIYA GAYA HAI
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
