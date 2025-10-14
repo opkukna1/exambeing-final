@@ -1,7 +1,8 @@
+// android/app/build.gradle
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin" // MOVED BACK TO THE TOP - THIS IS THE FIX
+    id "dev.flutter.flutter-gradle-plugin"
 }
 
 def localProperties = new Properties()
@@ -31,7 +32,6 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.opkukna.exambeing"
     compileSdk = 35
-    buildToolsVersion = "34.0.0"
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -75,8 +75,4 @@ flutter {
     source = "../.."
 }
 
-dependencies {
-    // Dependencies go here
-}
-
-// The old apply plugin line has been REMOVED from the bottom.
+dependencies {}
