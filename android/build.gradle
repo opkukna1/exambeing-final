@@ -1,14 +1,19 @@
-// This file now only defines tool versions. All repository lookups are handled by settings.gradle.
 buildscript {
     ext.kotlin_version = '1.9.23'
+    // This tells the builder where to find its own tools. THIS IS THE FIX.
+    repositories {
+        google()
+        mavenCentral()
+    }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.4.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
-// These sections are now empty or removed because settings.gradle handles them.
-allprojects {}
+// This section correctly remains empty because settings.gradle now handles it.
+allprojects {
+}
 
 rootProject.buildDir = '../build'
 subprojects {
