@@ -28,3 +28,15 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+// >>>>>>>> [ YEH AAKHRI BADLAAV HAI ] <<<<<<<<
+// This forces all sub-projects to use the correct compileSdk
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            android {
+                compileSdkVersion 35
+            }
+        }
+    }
+}
