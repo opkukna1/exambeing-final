@@ -1,4 +1,4 @@
-// android/app/build.gradle
+// android/app/build.gradle - Your app's main settings
 plugins {
     id "com.android.application"
     id "kotlin-android"
@@ -30,17 +30,17 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.opkukna.exambeing"
-    compileSdk = 35
-    ndkVersion = flutter.ndkVersion
+    namespace "com.opkukna.exambeing"
+    compileSdk 35
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = '1.8'
     }
 
     sourceSets {
@@ -48,9 +48,9 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.opkukna.exambeing"
-        minSdk = 23
-        targetSdk = 35
+        applicationId "com.opkukna.exambeing"
+        minSdk 23
+        targetSdk 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -72,7 +72,7 @@ android {
 }
 
 flutter {
-    source = "../.."
+    source '../..'
 }
 
 dependencies {}
