@@ -1,4 +1,21 @@
-// settings.gradle
+// settings.gradle - The Master Rule Book
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'android'
 include ':app'
 
 def localProperties = new Properties()
