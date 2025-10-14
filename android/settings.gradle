@@ -1,5 +1,5 @@
+// This file is now the single source of truth for all plugins and dependencies.
 pluginManagement {
-    // THIS IS THE FINAL FIX. It tells Gradle where to find plugins.
     repositories {
         google()
         mavenCentral()
