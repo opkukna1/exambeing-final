@@ -1,14 +1,18 @@
 buildscript {
     ext.kotlin_version = '1.9.23'
-    // REPOSITORIES BLOCK REMOVED FROM HERE
+    // This tells the builder where to find its tools
+    repositories {
+        google()
+        mavenCentral()
+    }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.4.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
+// This section correctly stays empty
 allprojects {
-    // REPOSITORIES BLOCK REMOVED FROM HERE
 }
 
 rootProject.buildDir = '../build'
