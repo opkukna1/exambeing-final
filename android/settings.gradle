@@ -1,4 +1,4 @@
-// This file is now the single source of truth for all plugins and dependencies.
+// This file is the single source of truth for all plugins and dependencies.
 pluginManagement {
     repositories {
         google()
