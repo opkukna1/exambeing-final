@@ -1,16 +1,25 @@
 buildscript {
-    ext.kotlin_version = '1.9.23' // Modern Kotlin Version
+    ext.kotlin_version = '1.9.23'
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.4.1' // Modern Gradle Plugin
+        classpath 'com.android.tools.build:gradle:8.4.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 allprojects {
+    // This fix is now in the correct place and will run at the right time.
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            android {
+                compileSdkVersion 35
+            }
+        }
+    }
+    
     repositories {
         google()
         mavenCentral()
@@ -27,16 +36,4 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
-}
-
-// >>>>>>>> [ YEH AAKHRI BADLAAV HAI ] <<<<<<<<
-// This forces all sub-projects to use the correct compileSdk
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            android {
-                compileSdkVersion 35
-            }
-        }
-    }
 }
