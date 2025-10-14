@@ -1,4 +1,5 @@
 pluginManagement {
+    // THIS IS THE FINAL FIX. It tells Gradle where to find plugins.
     repositories {
         google()
         mavenCentral()
@@ -17,7 +18,6 @@ dependencyResolutionManagement {
 rootProject.name = 'android'
 include ':app'
 
-// >>>>>>>> [ YEH AAKHRI FIX HAI ] <<<<<<<<
 // This code applies the main app's settings to all plugins
 try {
     def localProperties = new Properties()
