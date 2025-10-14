@@ -1,25 +1,40 @@
-buildscript {
-    ext.kotlin_version = '1.9.23'
-    // This tells the builder where to find its own tools. THIS IS THE FIX.
+// This file is the single source of truth for all plugins and dependencies.
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.4.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+}
+
+rootProject.name = 'android'
+include ':app'
+
+// This code applies the main app's settings to all plugins
+try {
+    def localProperties = new Properties()
+    def localPropertiesFile = new File(rootProject.projectDir, 'local.properties')
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.withReader('UTF-8') { reader ->
+            localProperties.load(reader)
+        }
     }
-}
 
-// This section correctly remains empty because settings.gradle now handles it.
-allprojects {
-}
+    def flutterSdkPath = localProperties.getProperty('flutter.sdk')
+    if (flutterSdkPath == null) {
+        throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+    }
 
-rootProject.buildDir = '../build'
-subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-
-tasks.register("clean", Delete) {
-    delete rootProject.buildDir
+    apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
+} catch (Exception e) {
+    // Fallback for CI/CD environments
+    apply from: '../../flutter/packages/flutter_tools/gradle/app_plugin_loader.gradle'
 }
