@@ -1,7 +1,7 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
+    // The Flutter plugin line has been REMOVED from here.
 }
 
 def localProperties = new Properties()
@@ -22,20 +22,16 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
-// >>>>>>>> [ NAYA CODE START ] <<<<<<<<
-// Yeh naya section key.properties file ko padhega
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
-// >>>>>>>> [ NAYA CODE END ] <<<<<<<<
-
 
 android {
     namespace = "com.opkukna.exambeing"
     compileSdk = 35
-    buildToolsVersion "34.0.0" // <-- YEH BADLAAV KIYA GAYA HAI
+    buildToolsVersion = "34.0.0"
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -59,8 +55,6 @@ android {
         versionName flutterVersionName
     }
 
-    // >>>>>>>> [ BADLA HUA CODE START ] <<<<<<<<
-    // Yeh section batayega ki release key kahan se leni hai
     signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
@@ -70,13 +64,11 @@ android {
         }
     }
 
-    // Ab release build sahi key se sign hoga
     buildTypes {
         release {
             signingConfig signingConfigs.release
         }
     }
-    // >>>>>>>> [ BADLA HUA CODE END ] <<<<<<<<
 }
 
 flutter {
@@ -84,3 +76,7 @@ flutter {
 }
 
 dependencies {}
+
+// >>>>>>>> [ YEH AAKHRI FIX HAI ] <<<<<<<<
+// This applies the Flutter plugin at the end of the file, after everything is configured.
+apply plugin: 'dev.flutter.flutter-gradle-plugin'
