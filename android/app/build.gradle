@@ -1,7 +1,7 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    // The Flutter plugin line has been REMOVED from here.
+    id "dev.flutter.flutter-gradle-plugin" // MOVED BACK TO THE TOP - THIS IS THE FIX
 }
 
 def localProperties = new Properties()
@@ -75,8 +75,8 @@ flutter {
     source = "../.."
 }
 
-dependencies {}
+dependencies {
+    // Dependencies go here
+}
 
-// >>>>>>>> [ YEH AAKHRI FIX HAI ] <<<<<<<<
-// This applies the Flutter plugin at the end of the file, after everything is configured.
-apply plugin: 'dev.flutter.flutter-gradle-plugin'
+// The old apply plugin line has been REMOVED from the bottom.
