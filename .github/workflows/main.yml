@@ -1,60 +1,66 @@
-name: Build Signed Flutter AAB
+# This GitHub Actions workflow automatically updates your Android project's Gradle files to target API 35.
+# You can run this workflow manually from the "Actions" tab in your GitHub repository.
 
+name: Update Android SDK to 35
+
+# Allows you to run this workflow manually from the Actions tab
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
-  build:
+  update-sdk-versions:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      # Step 1: Check out your repository code
+      # This action downloads your code into the runner environment.
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.2'
-          channel: 'stable'
-
-      - name: Install SDK Platform 35
+      # Step 2: Update SDK versions in all build.gradle files
+      # This step finds all 'build.gradle' files in the 'android' directory and its subdirectories.
+      # It then uses the 'sed' command to find and replace the compileSdkVersion and targetSdkVersion values.
+      # It's designed to work whether you define the version directly (e.g., `compileSdkVersion 34`)
+      # or as a variable (e.g., `ext.compileSdkVersion = 34`).
+      - name: Update target and compile SDK versions
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          mkdir -p /home/runner/Android/Sdk/cmdline-tools
-          cd /home/runner/Android/Sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
-          unzip commandlinetools-linux-10406996_latest.zip -d latest
-          yes | /home/runner/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-          yes | /home/runner/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "build-tools;35.0.0" "platforms;android-35"
+          echo "Searching for build.gradle files in the ./android/ directory..."
+          find ./android -type f -name "build.gradle" | while read file; do
+            echo "Processing file: $file"
+            # Update direct SDK version numbers
+            sed -i 's/compileSdkVersion [0-9][0-9]/compileSdkVersion 35/g' "$file"
+            sed -i 's/targetSdkVersion [0-9][0-9]/targetSdkVersion 35/g' "$file"
 
-      - name: Flutter pub get
-        run: flutter pub get
+            # Update SDK versions defined as variables (e.g., ext.compileSdkVersion)
+            sed -i 's/ext.compileSdkVersion = [0-9][0-9]/ext.compileSdkVersion = 35/g' "$file"
+            sed -i 's/ext.targetSdkVersion = [0-9][0-9]/ext.targetSdkVersion = 35/g' "$file"
+          done
+          echo "SDK version updates complete."
 
-      - name: Decode Keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-
-      - name: Create key.properties
+      # Step 3: Update Gradle Wrapper to a compatible version
+      # Newer Android SDKs require newer versions of Gradle.
+      # This step updates the gradle-wrapper.properties file to a version known to be compatible.
+      # We are using Gradle 8.5 as an example.
+      - name: Update Gradle Wrapper
         run: |
-          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=upload-keystore.jks" >> android/key.properties
+          WRAPPER_PROPERTIES="android/gradle/wrapper/gradle-wrapper.properties"
+          if [ -f "$WRAPPER_PROPERTIES" ]; then
+            echo "Updating Gradle Wrapper to version 8.5..."
+            sed -i 's/gradle-[0-9.]*-all.zip/gradle-8.5-all.zip/' "$WRAPPER_PROPERTIES"
+            echo "Gradle Wrapper updated."
+          else
+            echo "Warning: gradle-wrapper.properties not found at $WRAPPER_PROPERTIES"
+          fi
 
-      - name: Build AAB
-        run: flutter build appbundle --release
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      # Step 4: Commit the changes back to your repository
+      # This action automatically creates a new commit with all the changes made in the previous steps.
+      # This saves you from having to manually commit the files.
+      - name: Commit files
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: app-release
-          path: build/app/outputs/bundle/release/app-release.aab
+          commit_message: "ci: Bump Android SDK to 35 and update Gradle Wrapper"
+          branch: ${{ github.head_ref || github.ref_name }} # Commits to the branch the workflow was run on
+          commit_options: '--no-verify'
+          # Add a commit user and email, which is required for the commit to be successful.
+          commit_user_name: GitHub Actions Bot
+          commit_user_email: actions@github.com
+          commit_author: GitHub Actions Bot <actions@github.com>
