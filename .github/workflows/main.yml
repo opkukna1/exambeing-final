@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout repository
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
       - name: ☕ Set up JDK 17
@@ -20,38 +20,39 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 🔧 Set up Flutter
+      - name: 🪄 Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3' # अपने Flutter version के अनुसार बदल सकते हो
+          flutter-version: '3.24.3'
+          channel: 'stable'
 
-      - name: 📦 Install Android SDK Command-line Tools
+      - name: 📦 Install Android SDK Platform 35 manually
         run: |
-          echo "🔧 Setting ANDROID_HOME path..."
+          echo "📂 Setting up Android SDK..."
           export ANDROID_HOME=$HOME/Android/Sdk
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          cd $ANDROID_HOME/cmdline-tools
-          echo "📥 Downloading latest commandline-tools..."
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
-          unzip -q cmdline-tools.zip
-          rm cmdline-tools.zip
-          mv cmdline-tools latest
-          echo "✅ Command-line tools installed."
+          mkdir -p $ANDROID_HOME/platforms
+          mkdir -p $ANDROID_HOME/build-tools
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
 
-      - name: ✅ Accept SDK licenses and install Android 35
-        run: |
-          export ANDROID_HOME=$HOME/Android/Sdk
+          echo "📥 Downloading commandline tools..."
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
+          unzip -q tools.zip -d $ANDROID_HOME/cmdline-tools/latest
+          rm tools.zip
+
+          echo "📥 Installing SDK platform 35 + build-tools..."
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
-      - name: 📲 Flutter dependencies
+          echo "✅ Android SDK 35 installation complete."
+
+      - name: 📲 Get Flutter dependencies
         run: flutter pub get
 
       - name: 🧱 Build Flutter App Bundle
         run: flutter build appbundle --release
 
-      - name: 📤 Upload AAB Artifact
+      - name: 📤 Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
+          name: release-aab
           path: build/app/outputs/bundle/release/app-release.aab
