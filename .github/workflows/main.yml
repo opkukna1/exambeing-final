@@ -10,6 +10,11 @@ on:
 jobs:
   update-sdk-versions:
     runs-on: ubuntu-latest
+
+    # Add this permissions block to allow the action to write to your repository.
+    permissions:
+      contents: write
+
     steps:
       # Step 1: Check out your repository code
       # This action downloads your code into the runner environment.
