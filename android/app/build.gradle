@@ -1,4 +1,3 @@
-// android/app/build.gradle - Your app's main settings
 plugins {
     id "com.android.application"
     id "kotlin-android"

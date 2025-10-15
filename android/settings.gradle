@@ -1,4 +1,3 @@
-// settings.gradle - The Master Rule Book
 pluginManagement {
     repositories {
         google()
