@@ -3,7 +3,7 @@ name: Build Signed Flutter AAB
 on:
   push:
     branches:
-      - main  # Ya aapki default branch, jaise master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -14,35 +14,51 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 🧩 JDK setup
+      # 🧩 Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🧩 Flutter setup
+      # 🧩 Set up Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           flutter-version: '3.22.2'
 
-      # 🧩 Accept Android SDK licenses and fix corrupt SDKs
+      # 🧩 Setup Android SDK Environment and Fix SDK 35 Issue
       - name: Prepare Android SDK (Fix android-35 issue)
         run: |
-          yes | sdkmanager --licenses
-          echo "🧹 Removing possibly corrupt android-35..."
-          rm -rf /usr/local/lib/android/sdk/platforms/android-35
-          echo "📦 Reinstalling Android SDK Platform 35..."
-          yes | sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          echo "🔧 Setting ANDROID_HOME path..."
+          export ANDROID_HOME=$HOME/Android/Sdk
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools/bin
+          
+          echo "📦 Installing cmdline-tools if missing..."
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          yes | sudo apt-get update -y
+          yes | sudo apt-get install -y wget unzip
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
+          unzip -q cmdtools.zip -d $ANDROID_HOME/cmdline-tools/latest
+          rm cmdtools.zip
+          
+          echo "✅ Accepting SDK licenses..."
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          
+          echo "🧹 Removing possibly corrupt android-35 SDK..."
+          rm -rf $ANDROID_HOME/platforms/android-35
+          
+          echo "📥 Installing Android SDK Platform 35..."
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          
           echo "✅ Android SDK 35 installed successfully."
 
-      # 🧩 Flutter dependencies
+      # 🧩 Install Flutter dependencies
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      # 🧩 Decode keystore
+      # 🧩 Decode Keystore
       - name: Decode Keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
@@ -54,7 +70,7 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=upload-keystore.jks" >> android/key.properties
 
-      # 🧩 Clean build (optional but recommended)
+      # 🧩 Clean build
       - name: Flutter Clean
         run: flutter clean
 
