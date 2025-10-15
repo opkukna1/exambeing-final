@@ -14,64 +14,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 🧱 Install JDK 17 (required by Flutter/Gradle)
-      - name: Set up JDK 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🧩 Install Flutter SDK
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
           flutter-version: '3.22.2'
+          channel: 'stable'
 
-      # ⚙️ Install dependencies
-      - name: Install Flutter dependencies
+      - name: Install SDK Platform 35
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          mkdir -p /home/runner/Android/Sdk/cmdline-tools
+          cd /home/runner/Android/Sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
+          unzip commandlinetools-linux-10406996_latest.zip -d latest
+          yes | /home/runner/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+          yes | /home/runner/Android/Sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "build-tools;35.0.0" "platforms;android-35"
+
+      - name: Flutter pub get
         run: flutter pub get
 
-      # 📦 Install Android SDK 35 manually (to fix android.jar issue)
-      - name: Set up Android SDK 35
-        run: |
-          echo "📂 Setting up Android SDK..."
-          mkdir -p $HOME/Android/Sdk/cmdline-tools
-          cd $HOME/Android/Sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-          unzip tools.zip
-          rm tools.zip
-          mkdir -p $HOME/Android/Sdk/cmdline-tools/latest
-          mv cmdline-tools/* $HOME/Android/Sdk/cmdline-tools/latest/ || true
-          export ANDROID_SDK_ROOT=$HOME/Android/Sdk
-          export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
-          yes | sdkmanager --licenses
-          yes | sdkmanager "platform-tools" "build-tools;35.0.0" "platforms;android-35"
-
-      # 🔐 Decode keystore
       - name: Decode Keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
 
-      # 🧾 Create key.properties file
-      - name: Create key.properties file
+      - name: Create key.properties
         run: |
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=upload-keystore.jks" >> android/key.properties
 
-      # 🧹 Clean & Build
-      - name: Clean Project
-        run: flutter clean
-
-      - name: Build Flutter App Bundle (AAB)
-        env:
-          ANDROID_SDK_ROOT: $HOME/Android/Sdk
+      - name: Build AAB
         run: flutter build appbundle --release
 
-      # 📤 Upload artifact for download
-      - name: Upload AAB artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-aab
+          name: app-release
           path: build/app/outputs/bundle/release/app-release.aab
