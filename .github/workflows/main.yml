@@ -30,14 +30,17 @@ jobs:
         run: |
           echo "📂 Setting up Android SDK..."
           export ANDROID_HOME=$HOME/Android/Sdk
-          mkdir -p $ANDROID_HOME/platforms
-          mkdir -p $ANDROID_HOME/build-tools
-          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd $ANDROID_HOME/cmdline-tools
 
           echo "📥 Downloading commandline tools..."
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-          unzip -q tools.zip -d $ANDROID_HOME/cmdline-tools/latest
+          unzip -q tools.zip
           rm tools.zip
+
+          # 👇 Move correct folder structure
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          mv cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/ || true
 
           echo "📥 Installing SDK platform 35 + build-tools..."
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
