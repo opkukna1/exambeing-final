@@ -16,3 +16,17 @@ dependencyResolutionManagement {
 
 rootProject.name = 'exambeing_final'
 include ':app'
+
+// This section is critical for finding the Flutter plugin
+def localPropertiesFile = new File(rootProject.projectDir.parentFile, 'local.properties')
+def properties = new Properties()
+
+assert localPropertiesFile.exists(), "local.properties file not found. Please create one with flutter.sdk=/path/to/flutter/sdk"
+localPropertiesFile.withReader('UTF-8') { reader ->
+    properties.load(reader)
+}
+
+def flutterSdkPath = properties.getProperty('flutter.sdk')
+assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+
+apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
