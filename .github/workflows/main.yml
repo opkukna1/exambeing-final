@@ -25,12 +25,9 @@ jobs:
       # Step 3: Decode and place the Keystore file
       # This step takes your Base64 secret and converts it back into the keystore file.
       - name: Decode Keystore
-        env:
-          # Using the secret name you provided
-          RELEASE_KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           echo "Decoding and placing keystore..."
-          echo $RELEASE_KEYSTORE_BASE64 | base64 --decode > android/app/release.keystore
+          echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/app/release.keystore
           echo "Keystore placed successfully."
 
       # Step 4: Make the Gradle wrapper executable
@@ -38,19 +35,21 @@ jobs:
         run: chmod +x android/gradlew
 
       # Step 5: Build the signed App Bundle (AAB)
-      # This step runs the build command and passes your secrets as environment variables to Gradle.
+      # This step runs the build command. The build.gradle file will now directly
+      # read the secrets you have set in your repository.
       - name: Build Release AAB
+        # Secrets are passed to the build process
         env:
-          # Mapping your secret names to the variables the build.gradle file will use
-          MY_RELEASE_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
-          MY_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          MY_RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+            KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+            KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+            KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./android/gradlew -p android bundleRelease
 
       # Step 6: Upload the generated AAB as an artifact
-      # After the build is successful, this uploads the AAB so you can download it.
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: android/app/build/outputs/bundle/release/app-release.aab
+
+
