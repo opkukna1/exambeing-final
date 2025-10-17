@@ -1,18 +1,31 @@
-// File: android/build.gradle
-
 buildscript {
-    // Change this version
-    ext.kotlin_version = '1.9.22' 
+    ext.kotlin_version = '1.9.23' // Use a recent Kotlin version
     repositories {
         google()
         mavenCentral()
     }
-
     dependencies {
-        // Change this version to a recent one like 8.2.0 or higher
-        classpath 'com.android.tools.build:gradle:8.2.0'
+        // Use a recent and stable AGP version
+        classpath 'com.android.tools.build:gradle:8.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
-// ... rest of the file
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
