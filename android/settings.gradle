@@ -1,3 +1,5 @@
+// File: android/settings.gradle
+
 pluginManagement {
     repositories {
         google()
@@ -14,5 +16,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "exambeing_final"
-include(":app")
+rootProject.name = 'exambeing_final'
+include ':app'
