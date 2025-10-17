@@ -1,20 +1,62 @@
-// File: android/app/build.gradle
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
 
 android {
-    // Change this line
-    compileSdkVersion 35
+    namespace "com.example.exambeing_final" // Make sure this matches your package name
+    compileSdkVersion 34 // Target Android 14
+    ndkVersion flutter.ndkVersion
 
-    // ... other settings
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
 
     defaultConfig {
-        // ... other settings
-        minSdkVersion 21 // You can keep this or update it if needed
-
-        // Change this line
-        targetSdkVersion 35
+        applicationId "com.example.exambeing_final" // Make sure this matches your package name
+        minSdkVersion 21
+        targetSdkVersion 34 // Target Android 14
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
-    // ... rest of the file
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+        }
+    }
 }
+
+flutter {
+    source '../..'
+}
+
+dependencies {}
