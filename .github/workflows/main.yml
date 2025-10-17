@@ -1,49 +1,44 @@
-name: Build Signed Flutter AAB
+# File: .github/workflows/your-workflow-file.yml
+
+name: Build Flutter App
 
 on:
   push:
-    branches:
-      - main  # Ya aapki default branch, jaise master
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # 1. Aapke code ko download karta hai
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # >>>>>>>> [ YEH STEP BADLA GAYA HAI ] <<<<<<<<
-      - name: Set up JDK 21
+      # 2. Java (JDK) set up karta hai
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21' # Version ko 17 se 21 kar diya gaya hai
+          java-version: '17'
 
+      # 3. Flutter SDK set up karta hai
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.22.2'
+          cache: true
 
-      - name: Install Flutter dependencies
+      # 4. YEH STEP ERROR FIX KARTA HAI: local.properties file banata hai
+      - name: Create local.properties
+        run: echo "flutter.sdk=$FLUTTER_HOME" > ./android/local.properties
+
+      # 5. Flutter ke package download karta hai
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Decode Keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-      
-      - name: Create key.properties file
-        run: |
-          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=upload-keystore.jks" >> android/key.properties
-
-      - name: Build Flutter App Bundle (AAB)
+      # 6. Release app bundle banata hai
+      - name: Build App Bundle
         run: flutter build appbundle --release
-
-      - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-aab
-          path: build/app/outputs/bundle/release/app-release.aab
