@@ -1,71 +1,56 @@
-# This GitHub Actions workflow automatically updates your Android project's Gradle files to target API 35.
-# You can run this workflow manually from the "Actions" tab in your GitHub repository.
+# This GitHub Actions workflow builds a signed release AAB (Android App Bundle).
+# It uses the secrets you have configured in your repository settings.
 
-name: Update Android SDK to 35
+name: Build Signed Android App
 
-# Allows you to run this workflow manually from the Actions tab
 on:
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  update-sdk-versions:
+  build-release-aab:
     runs-on: ubuntu-latest
-
-    # Add this permissions block to allow the action to write to your repository.
-    permissions:
-      contents: write
-
     steps:
       # Step 1: Check out your repository code
-      # This action downloads your code into the runner environment.
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Update SDK versions in all build.gradle files
-      # This step finds all 'build.gradle' files in the 'android' directory and its subdirectories.
-      # It then uses the 'sed' command to find and replace the compileSdkVersion and targetSdkVersion values.
-      # It's designed to work whether you define the version directly (e.g., `compileSdkVersion 34`)
-      # or as a variable (e.g., `ext.compileSdkVersion = 34`).
-      - name: Update target and compile SDK versions
-        run: |
-          echo "Searching for build.gradle files in the ./android/ directory..."
-          find ./android -type f -name "build.gradle" | while read file; do
-            echo "Processing file: $file"
-            # Update direct SDK version numbers
-            sed -i 's/compileSdkVersion [0-9][0-9]/compileSdkVersion 35/g' "$file"
-            sed -i 's/targetSdkVersion [0-9][0-9]/targetSdkVersion 35/g' "$file"
-
-            # Update SDK versions defined as variables (e.g., ext.compileSdkVersion)
-            sed -i 's/ext.compileSdkVersion = [0-9][0-9]/ext.compileSdkVersion = 35/g' "$file"
-            sed -i 's/ext.targetSdkVersion = [0-9][0-9]/ext.targetSdkVersion = 35/g' "$file"
-          done
-          echo "SDK version updates complete."
-
-      # Step 3: Update Gradle Wrapper to a compatible version
-      # Newer Android SDKs require newer versions of Gradle.
-      # This step updates the gradle-wrapper.properties file to a version known to be compatible.
-      # We are using Gradle 8.5 as an example.
-      - name: Update Gradle Wrapper
-        run: |
-          WRAPPER_PROPERTIES="android/gradle/wrapper/gradle-wrapper.properties"
-          if [ -f "$WRAPPER_PROPERTIES" ]; then
-            echo "Updating Gradle Wrapper to version 8.5..."
-            sed -i 's/gradle-[0-9.]*-all.zip/gradle-8.5-all.zip/' "$WRAPPER_PROPERTIES"
-            echo "Gradle Wrapper updated."
-          else
-            echo "Warning: gradle-wrapper.properties not found at $WRAPPER_PROPERTIES"
-          fi
-
-      # Step 4: Commit the changes back to your repository
-      # This action automatically creates a new commit with all the changes made in the previous steps.
-      # This saves you from having to manually commit the files.
-      - name: Commit files
-        uses: stefanzweifel/git-auto-commit-action@v5
+      # Step 2: Set up JDK (Java Development Kit) for the build
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          commit_message: "ci: Bump Android SDK to 35 and update Gradle Wrapper"
-          branch: ${{ github.head_ref || github.ref_name }} # Commits to the branch the workflow was run on
-          commit_options: '--no-verify'
-          # Add a commit user and email, which is required for the commit to be successful.
-          commit_user_name: GitHub Actions Bot
-          commit_user_email: actions@github.com
-          commit_author: GitHub Actions Bot <actions@github.com>
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Step 3: Decode and place the Keystore file
+      # This step takes your Base64 secret and converts it back into the keystore file.
+      - name: Decode Keystore
+        env:
+          # Using the secret name you provided
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "Decoding and placing keystore..."
+          echo $RELEASE_KEYSTORE_BASE64 | base64 --decode > android/app/release.keystore
+          echo "Keystore placed successfully."
+
+      # Step 4: Make the Gradle wrapper executable
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      # Step 5: Build the signed App Bundle (AAB)
+      # This step runs the build command and passes your secrets as environment variables to Gradle.
+      - name: Build Release AAB
+        env:
+          # Mapping your secret names to the variables the build.gradle file will use
+          MY_RELEASE_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
+          MY_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          MY_RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./android/gradlew -p android bundleRelease
+
+      # Step 6: Upload the generated AAB as an artifact
+      # After the build is successful, this uploads the AAB so you can download it.
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: android/app/build/outputs/bundle/release/app-release.aab
