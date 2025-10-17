@@ -1,7 +1,5 @@
 buildscript {
     ext.kotlin_version = '1.9.23'
-    
-    // यह ब्लॉक एरर को ठीक करने के लिए ज़रूरी है
     repositories {
         google()
         mavenCentral()
@@ -14,7 +12,7 @@ buildscript {
 }
 
 allprojects {
-    // यह ब्लॉक खाली ही रहना चाहिए
+    // This block must remain empty
 }
 
 tasks.register("clean", Delete) {
