@@ -1,55 +1,67 @@
-# This GitHub Actions workflow builds a signed release AAB (Android App Bundle).
-# It uses the secrets you have configured in your repository settings.
+# Name of your workflow
+name: Android Build CI
 
-name: Build Signed Android App
-
+# Controls when the workflow will run
 on:
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  # Triggers the workflow on push events for the "main" branch
+  push:
+    branches: [ "main" ]
+    
+  # Triggers the workflow on pull request events for the "main" branch
+  pull_request:
+    branches: [ "main" ]
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build-release-aab:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Step 1: Check out your repository code
-      - name: Checkout repository
+      # 1. Checks out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up JDK (Java Development Kit) for the build
+      # 2. Sets up the Java Development Kit (JDK) required for Android builds
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
           java-version: '17'
+          distribution: 'temurin'
 
-      # Step 3: Decode and place the Keystore file
-      # This step takes your Base64 secret and converts it back into the keystore file.
-      - name: Decode Keystore
-        run: |
-          echo "Decoding and placing keystore..."
-          echo ${{ secrets.KEYSTORE_BASE64 }} | base64 --decode > android/app/release.keystore
-          echo "Keystore placed successfully."
+      # 3. Caches Gradle dependencies to speed up subsequent builds
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-      # Step 4: Make the Gradle wrapper executable
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
+      # 4. Grant execute permission for gradlew (important for Flutter projects)
+      # This step is often necessary to run the build command.
+      - name: Make gradle executable
+        run: chmod +x ./android/gradlew
+        # For a native Android project, the path might just be:
+        # run: chmod +x ./gradlew
 
-      # Step 5: Build the signed App Bundle (AAB)
-      # This step runs the build command. The build.gradle file will now directly
-      # read the secrets you have set in your repository.
-      - name: Build Release AAB
-        # Secrets are passed to the build process
-        env:
-            KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-            KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-            KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./android/gradlew -p android bundleRelease
+      # 5. Build the app using Gradle
+      # Based on your preference, you could replace './android/gradlew' with 'gradle'
+      # However, using the wrapper ('gradlew') is highly recommended for CI to ensure consistency.
+      - name: Build with Gradle
+        run: ./android/gradlew -p ./android assembleDebug
+        # For a native Android project, the command would be:
+        # run: ./gradlew assembleDebug
 
-      # Step 6: Upload the generated AAB as an artifact
-      - name: Upload AAB
+      # 6. (Optional) Upload the built APK file as a workflow artifact
+      # This lets you download the compiled app directly from the GitHub Actions run.
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: android/app/build/outputs/bundle/release/app-release.aab
-
+          name: app-debug-apk
+          path: build/app/outputs/apk/debug/app-debug.apk
 
