@@ -4,27 +4,13 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
-}
-
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
-
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
+// ... (बाकी का ऊपर का हिस्सा वैसा ही रहेगा)
 
 android {
-    namespace "com.example.exambeing_final" // Make sure this matches your package name
-    compileSdkVersion 34 // Target Android 14
+    namespace "com.example.exambeing_final" // यह आपका पैकेज नाम होना चाहिए
+    
+    // यहाँ API 35 सेट करें
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -32,31 +18,17 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
+    // ...
 
     defaultConfig {
-        applicationId "com.example.exambeing_final" // Make sure this matches your package name
+        applicationId "com.example.exambeing_final" // यह आपका पैकेज नाम होना चाहिए
         minSdkVersion 21
-        targetSdkVersion 34 // Target Android 14
+        
+        // यहाँ भी API 35 सेट करें
+        targetSdkVersion 35 
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.debug
-        }
-    }
+    // ... (बाकी की फाइल वैसी ही रहेगी)
 }
-
-flutter {
-    source '../..'
-}
-
-dependencies {}
