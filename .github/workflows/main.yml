@@ -1,45 +1,38 @@
-# File: .github/workflows/your-workflow-file.yml
-
-name: Build Flutter App
+name: Build Flutter APK
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main  # Or your default branch, e.g., master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Aapke code ko download karta hai
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Java (JDK) set up karta hai
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. Flutter SDK set up karta hai
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
-          cache: true
+          channel: 'stable' # Use stable channel
+          flutter-version: '3.22.2' # Specify a recent stable Flutter version
 
-      # 4. YEH STEP ERROR FIX KARTA HAI: local.properties file banata hai
-      #    Yeh 'flutter pub get' se pehle hona zaroori hai.
-      - name: Create local.properties
-        run: echo "flutter.sdk=$FLUTTER_HOME" > ./android/local.properties
-
-      # 5. Flutter ke package download karta hai
-      - name: Install dependencies
+      - name: Install Flutter dependencies
         run: flutter pub get
 
-      # 6. Release app bundle banata hai
-      - name: Build App Bundle
-        run: flutter build appbundle --release
+      - name: Build Flutter APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
