@@ -32,6 +32,7 @@ jobs:
           cache: true
 
       # 4. YEH STEP ERROR FIX KARTA HAI: local.properties file banata hai
+      #    Yeh 'flutter pub get' se pehle hona zaroori hai.
       - name: Create local.properties
         run: echo "flutter.sdk=$FLUTTER_HOME" > ./android/local.properties
 
