@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:exambeing/navigation/app_router.dart';
-import 'package:exambeing/firebase_options.dart'; // ✅ सही import
+import 'package:chetegram/navigation/app_router.dart'; // ⬅️ FIX: 'exambeing' ko 'chetegram' kiya
+import 'package:chetegram/firebase_options.dart'; // ⬅️ FIX: 'exambeing' ko 'chetegram' kiya
 import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ Firebase Initialize करो
+  // ✅ Firebase Initialize karo
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -65,7 +65,7 @@ class ExambeingApp extends StatelessWidget {
       title: 'Exambeing',
       theme: theme,
       debugShowCheckedModeBanner: false,
-      routerConfig: router,
+      routerConfig: router, // Yeh 'app_router.dart' se aa jayega
     );
   }
 }
