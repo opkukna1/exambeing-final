@@ -11,7 +11,7 @@ plugins {
 // aapki 'gradle.properties' file mein woh values nahi hain.
 
 android {
-    namespace = "com.example.chetegram"
+    namespace = "com.opkukna.exambeing"
     
     // ⬇️ API Level 35 yahaan set hai
     compileSdk = 35
