@@ -1,4 +1,4 @@
-plugins {
+Plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
@@ -25,7 +25,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace = "com.example.exambeing"
-    compileSdk = 34
+    compileSdk = 35 // ⬅️ Yahaan 35 kar diya
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -44,7 +44,7 @@ android {
     defaultConfig {
         applicationId = "com.example.exambeing"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 35 // ⬅️ Yahaan bhi 35 kar diya
         // These lines now use the new method
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
